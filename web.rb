@@ -31,6 +31,7 @@ post '/move' do
     requestJson = requestBody ? JSON.parse(requestBody) : {}
 
     # Calculate a move with the request data
+    puts "debug hello world"
 
 
     # Dummy response
