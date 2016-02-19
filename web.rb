@@ -1,10 +1,12 @@
 require 'sinatra'
 require 'json'
 
+# Snake ID ee78439a-e6fa-40a0-a28a-874b7b10e287
+
 get '/' do
     responseObject = {
-        "color"=> "#fff000",
-        "head_url"=> "url/to/your/img/file"
+        "color"=> "#eeeeee",
+        "head_url"=> "https://leanpub-battlesnake.herokuapp.com/leanpublogo.png"
     }
 
     return responseObject.to_json
@@ -30,10 +32,11 @@ post '/move' do
 
     # Calculate a move with the request data
 
+
     # Dummy response
     responseObject = {
-        "move" => "north", # One of either "north", "east", "south", or "west".
-        "taunt" => "going north!",
+      "move" => "north", # One of either "north", "east", "south", or "west".
+      "taunt" => "going north!",
     }
 
     return responseObject.to_json
