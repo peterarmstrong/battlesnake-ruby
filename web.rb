@@ -32,7 +32,7 @@ post '/move' do
     requestJson = requestBody ? JSON.parse(requestBody) : {}
 
     # Calculate a move with the request data
-    puts requestJson
+    #puts requestJson
 
     turn = requestJson["turn"]
     food = requestJson["food"]
@@ -48,17 +48,17 @@ post '/move' do
     my_snake = snakes.select{|snake| snake["id"] == MY_SNAKE_ID}.first
     other_snakes = snakes.reject{|snake| snake["id"] == MY_SNAKE_ID}
 
-    puts "turn is #{turn}"
-    puts "food is #{food}"
-    puts "gold is #{gold}"
-    puts "mode is #{mode}"
-    puts "inner_walls is #{inner_walls}"
-    puts "height is #{height}"
-    puts "game is #{game}"
-    puts "snakes are #{snakes}"
-    puts "width is #{width}"
-    puts "my_snake is #{my_snake}"
-    puts "other_snakes are #{other_snakes}"
+    #puts "turn is #{turn}"
+    #puts "food is #{food}"
+    #puts "gold is #{gold}"
+    #puts "mode is #{mode}"
+    #puts "inner_walls is #{inner_walls}"
+    #puts "height is #{height}"
+    #puts "game is #{game}"
+    #puts "snakes are #{snakes}"
+    #puts "width is #{width}"
+    #puts "my_snake is #{my_snake}"
+    #puts "other_snakes are #{other_snakes}"
 
 # {"turn": 2, "food": [], "gold": [[10, 9]], "mode": "advanced", "walls": [], "height": 20, "game": "inspired-runoff", "snakes": [{"gold": 0, "url": "localsnake://greg", "kills": 0, "age": 2, "id": "4ac21049-218e-421b-b4ef-c095e5032647", "message": "", "name": "Sleepy Snake", "coords": [[14, 5], [14, 4], [15, 4]], "taunt": null, "status": "alive", "health": 98}, {"id": "ee78439a-e6fa-40a0-a28a-874b7b10e287", "message": "", "name": "Lean Snake", "coords": [[15, 13], [15, 14], [15, 15]], "taunt": "going north!", "health": 98, "status": "alive", "gold": 0, "kills": 0, "age": 2}], "width": 20}
 
@@ -109,23 +109,23 @@ post '/move' do
       outer_walls << [width, y]
     end
 
-    puts "there are #{outer_walls.length} outer walls"
-    puts outer_walls.inspect
+    #puts "there are #{outer_walls.length} outer walls"
+    #puts outer_walls.inspect
 
-    puts "there are #{inner_walls.length} inner walls"
+    #puts "there are #{inner_walls.length} inner walls"
 
     walls = outer_walls + inner_walls
 
-    puts "there are #{walls.length} walls"
+    #puts "there are #{walls.length} walls"
 
-    puts "walls"
-    puts walls.inspect
+    #puts "walls"
+    #puts walls.inspect
 
-    puts "possible_move_coords START AS #{possible_move_coords}"
+    #puts "possible_move_coords START AS #{possible_move_coords}"
 
     possible_move_coords = avoid_coords(possible_move_coords, walls)
 
-    puts "possible_move_coords are now #{possible_move_coords}"
+    #puts "possible_move_coords are now #{possible_move_coords}"
 
 
     # Avoid snake bodies (including the tail for now, even though it usually moves)
@@ -134,17 +134,17 @@ post '/move' do
       snake_bodies += snake["coords"]
     end
 
-    puts "snake_bodies = #{snake_bodies}"
+    #puts "snake_bodies = #{snake_bodies}"
 
     possible_move_coords = avoid_coords(possible_move_coords, snake_bodies)
 
-    puts "possible_move_coords are now #{possible_move_coords}"
+    #puts "possible_move_coords are now #{possible_move_coords}"
 
     move_coord = choose_move_coord(possible_move_coords)
-    puts "move_coord = #{move_coord}"
+    #puts "move_coord = #{move_coord}"
 
     move = coords_to_move_direction(move_coord, north_move_coord, east_move_coord, south_move_coord, west_move_coord)
-    puts "move = #{move}"
+    #puts "move = #{move}"
 
     # Dummy response
     responseObject = {
