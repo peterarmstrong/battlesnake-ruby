@@ -6,8 +6,8 @@ LEGAL_MOVES = %w(north east south west)
 
 get '/' do
     responseObject = {
-        "color"=> "#eeeeee",
-        "head_url"=> "https://leanpub-battlesnake.herokuapp.com/public/images/logo.png"
+        "color"=> "#ffffff",
+        "head_url"=> "https://pbs.twimg.com/profile_images/522096341728497664/Wcu4XQUw_400x400.png"
     }
 
     return responseObject.to_json
@@ -77,6 +77,8 @@ post '/move' do
 
     dont_go = []
     puts "dont_go = #{dont_go}"
+
+    # Avoid neck
     if my_snake_head_x - my_snake_neck_x == 1 # last move was east, don't go west
       dont_go << "west"
     elsif my_snake_head_x - my_snake_neck_x == -1 # last move was west, don't go east
@@ -90,6 +92,20 @@ post '/move' do
         # assumption = no last move, nothing to avoid
       end
     end
+
+    # Avoid outer walls
+    dont_go << "west" if my_snake_head_x == 0
+    dont_go << "east" if my_snake_head_x == width - 1
+    dont_go << "north" if my_snake_head_y == 0
+    dont_go << "south" if my_snake_head_y == height - 1
+
+    # Avoid inner walls
+
+    # Avoid snake bodies
+
+    # Remove duplicates
+    dont_go.uniq!
+
     puts "dont_go = #{dont_go}"
     puts "LEGAL_MOVES = #{LEGAL_MOVES}"
 
