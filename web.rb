@@ -38,7 +38,7 @@ post '/move' do
     food = requestJson["food"]
     gold = requestJson["gold"]
     mode = requestJson["mode"]
-    walls = requestJson["walls"]
+    inner_walls = requestJson["walls"]
     height = requestJson["height"]
     game = requestJson["game"]
     snakes = requestJson["snakes"]
@@ -51,7 +51,7 @@ post '/move' do
     puts "food is #{food}"
     puts "gold is #{gold}"
     puts "mode is #{mode}"
-    puts "walls is #{walls}"
+    puts "inner_walls is #{inner_walls}"
     puts "height is #{height}"
     puts "game is #{game}"
     puts "snakes are #{snakes}"
@@ -61,57 +61,77 @@ post '/move' do
 
 # {"turn": 2, "food": [], "gold": [[10, 9]], "mode": "advanced", "walls": [], "height": 20, "game": "inspired-runoff", "snakes": [{"gold": 0, "url": "localsnake://greg", "kills": 0, "age": 2, "id": "4ac21049-218e-421b-b4ef-c095e5032647", "message": "", "name": "Sleepy Snake", "coords": [[14, 5], [14, 4], [15, 4]], "taunt": null, "status": "alive", "health": 98}, {"id": "ee78439a-e6fa-40a0-a28a-874b7b10e287", "message": "", "name": "Lean Snake", "coords": [[15, 13], [15, 14], [15, 15]], "taunt": "going north!", "health": 98, "status": "alive", "gold": 0, "kills": 0, "age": 2}], "width": 20}
 
+# {"turn"=>56, "game"=>"puzzled-architecture", "height"=>20, "mode"=>"advanced", "food"=>[[15, 18], [7, 1], [4, 19], [15, 9], [13, 18], [2, 13], [0, 7], [7, 16], [8, 8], [14, 16], [5, 16], [6, 10], [12, 10], [11, 6], [14, 0], [19, 19]], "walls"=>[[8, 13], [11, 15]], "width"=>20, "snakes"=>[{"taunt"=>nil, "message"=>"", "gold"=>0, "id"=>"4f286331-b8e2-42d8-ac8f-d075ccfe301c", "age"=>56, "status"=>"alive", "coords"=>[[1, 18], [1, 19], [0, 19]], "health"=>44, "name"=>"Son of Chicken Snake", "kills"=>0}, {"taunt"=>"going south!", "message"=>"", "gold"=>0, "id"=>"ee78439a-e6fa-40a0-a28a-874b7b10e287", "age"=>56, "status"=>"alive", "coords"=>[[16, 1], [16, 0], [15, 0], [15, 1], [15, 2]], "health"=>95, "name"=>"Leanpub Bounty Snake", "kills"=>0}], "gold"=>[[9, 10]]}
+
+# snakes grow at head. tail does not move if snake eats food. otherwise, tail is pulled along.
+
     my_snake_coords = my_snake["coords"]
     my_snake_head = my_snake_coords[0]
-    my_snake_neck = my_snake_coords[1]
     my_snake_head_x = my_snake_head[0]
     my_snake_head_y = my_snake_head[1]
-    my_snake_neck_x = my_snake_neck[0]
-    my_snake_neck_y = my_snake_neck[1]
 
+    # Board:
     # [0,0],        [1,0],        ..., [width-1, 0]
     # [0,1],        [1,1],        ..., [width-1, 1]
     # ...
     # [0,height-2], [1,height-2], ..., [width-1, height-2]
     # [0,height-1], [1,height-1], ..., [width-1, height-1]
 
-    dont_go = []
-    puts "dont_go = #{dont_go}"
+    north_move = [my_snake_head_x, my_snake_head_y - 1]
+    east_move = [my_snake_head_x + 1, my_snake_head_y]
+    south_move = [my_snake_head_x, my_snake_head_y + 1]
+    west_move = [my_snake_head_x - 1, my_snake_head_y]
+    possible_moves = [north_move, east_move, south_move, west_move]
 
-    # Avoid neck
-    if my_snake_head_x - my_snake_neck_x == 1 # last move was east, don't go west
-      dont_go << "west"
-    elsif my_snake_head_x - my_snake_neck_x == -1 # last move was west, don't go east
-      dont_go << "east"
-    else
-      if my_snake_head_y - my_snake_neck_y == 1 # last move was south, don't go north
-        dont_go << "north"
-      elsif my_snake_head_y - my_snake_neck_y == -1 # last move was north, don't go south
-        dont_go << "south"
-      else
-        # assumption = no last move, nothing to avoid
-      end
+    # Outer Walls:
+    # [-1, -1], [0, -1], ... [width, -1]
+    # [-1, 0],               [width, 0]
+    # [-1, 1],               [width, 1]
+    # ...
+    # [-1, height], [0, height], ..., [width, height]
+
+    outer_walls = []
+    # build top wall
+    for x in -1 .. width
+      outer_walls << [x, -1]
+    end
+    # build bottom wall
+    for x in -1 .. width
+      outer_walls << [x, height]
+    end
+    # build left wall
+    for y in 0 .. height-1
+      outer_walls << [-1, y]
+    end
+    # build right wall
+    for y in 0 .. height-1
+      outer_walls << [width, y]
     end
 
-    # Avoid outer walls
-    dont_go << "west" if my_snake_head_x == 0
-    dont_go << "east" if my_snake_head_x == width - 1
-    dont_go << "north" if my_snake_head_y == 0
-    dont_go << "south" if my_snake_head_y == height - 1
+    puts "Outer Walls!"
+    puts outer_walls.inspect
 
-    # Avoid inner walls
+    walls = outer_walls + inner_walls
 
-    # Avoid snake bodies
+    puts "possible_moves START AS #{possible_moves}"
 
-    # Remove duplicates
-    dont_go.uniq!
+    possible_moves = avoid_coords(possible_moves, walls)
 
-    puts "dont_go = #{dont_go}"
-    puts "LEGAL_MOVES = #{LEGAL_MOVES}"
+    puts "possible_moves are now #{possible_moves}"
 
-    possible_moves = LEGAL_MOVES.reject{|move| dont_go.include? move}
 
-    puts "possible_moves = #{possible_moves}"
+    # Avoid snake bodies (including the tail for now, even though it usually moves)
+    snake_bodies = my_snake.coords
+    other_snakes.each do |snake|
+      snake_bodies += snake.coords
+    end
+
+    puts "snake_bodies = #{snake_bodies}"
+
+    possible_moves = avoid_coords(possible_moves, snake_bodies)
+
+    puts "possible_moves are now #{possible_moves}"
+
     move = choose_move(possible_moves)
     puts "move = #{move}"
 
@@ -122,6 +142,14 @@ post '/move' do
     }
 
     return responseObject.to_json
+end
+
+def avoid_coords(possible_moves, coords)
+  legal_moves = []
+  possible_moves.each do |move|
+    legal_moves << move unless coords.include? move
+  end
+  legal_moves
 end
 
 def choose_move(possible_moves)
