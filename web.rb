@@ -39,6 +39,7 @@ post '/move' do
     gold = requestJson["gold"]
     mode = requestJson["mode"]
     inner_walls = requestJson["walls"]
+    inner_walls ||= []
     height = requestJson["height"]
     game = requestJson["game"]
     snakes = requestJson["snakes"]
@@ -77,11 +78,11 @@ post '/move' do
     # [0,height-2], [1,height-2], ..., [width-1, height-2]
     # [0,height-1], [1,height-1], ..., [width-1, height-1]
 
-    north_move = [my_snake_head_x, my_snake_head_y - 1]
-    east_move = [my_snake_head_x + 1, my_snake_head_y]
-    south_move = [my_snake_head_x, my_snake_head_y + 1]
-    west_move = [my_snake_head_x - 1, my_snake_head_y]
-    possible_moves = [north_move, east_move, south_move, west_move]
+    north_move_coord = [my_snake_head_x, my_snake_head_y - 1]
+    east_move_coord = [my_snake_head_x + 1, my_snake_head_y]
+    south_move_coord = [my_snake_head_x, my_snake_head_y + 1]
+    west_move_coord = [my_snake_head_x - 1, my_snake_head_y]
+    possible_move_coords = [north_move_coord, east_move_coord, south_move_coord, west_move_coord]
 
     # Outer Walls:
     # [-1, -1], [0, -1], ... [width, -1]
@@ -108,31 +109,41 @@ post '/move' do
       outer_walls << [width, y]
     end
 
-    puts "Outer Walls!"
+    puts "there are #{outer_walls.length} outer walls"
     puts outer_walls.inspect
+
+    puts "there are #{inner_walls.length} inner walls"
 
     walls = outer_walls + inner_walls
 
-    puts "possible_moves START AS #{possible_moves}"
+    puts "there are #{walls.length} walls"
 
-    possible_moves = avoid_coords(possible_moves, walls)
+    puts "walls"
+    puts walls.inspect
 
-    puts "possible_moves are now #{possible_moves}"
+    puts "possible_move_coords START AS #{possible_move_coords}"
+
+    possible_move_coords = avoid_coords(possible_move_coords, walls)
+
+    puts "possible_move_coords are now #{possible_move_coords}"
 
 
     # Avoid snake bodies (including the tail for now, even though it usually moves)
-    snake_bodies = my_snake.coords
+    snake_bodies = my_snake["coords"]
     other_snakes.each do |snake|
-      snake_bodies += snake.coords
+      snake_bodies += snake["coords"]
     end
 
     puts "snake_bodies = #{snake_bodies}"
 
-    possible_moves = avoid_coords(possible_moves, snake_bodies)
+    possible_move_coords = avoid_coords(possible_move_coords, snake_bodies)
 
-    puts "possible_moves are now #{possible_moves}"
+    puts "possible_move_coords are now #{possible_move_coords}"
 
-    move = choose_move(possible_moves)
+    move_coord = choose_move_coord(possible_move_coords)
+    puts "move_coord = #{move_coord}"
+
+    move = coords_to_move_direction(move_coord, north_move_coord, east_move_coord, south_move_coord, west_move_coord)
     puts "move = #{move}"
 
     # Dummy response
@@ -144,17 +155,25 @@ post '/move' do
     return responseObject.to_json
 end
 
-def avoid_coords(possible_moves, coords)
-  legal_moves = []
-  possible_moves.each do |move|
-    legal_moves << move unless coords.include? move
-  end
-  legal_moves
+def coords_to_move_direction(move_coord, north_move_coord, east_move_coord, south_move_coord, west_move_coord)
+  return "north" if move_coord == north_move_coord
+  return "east" if move_coord == east_move_coord
+  return "south" if move_coord == south_move_coord
+  return "west" if move_coord == west_move_coord
+  return "omgwtfbbq"
 end
 
-def choose_move(possible_moves)
+def avoid_coords(possible_move_coords, coords)
+  legal_coords = []
+  possible_move_coords.each do |coord|
+    legal_coords << coord unless coords.include? coord
+  end
+  legal_coords
+end
+
+def choose_move_coord(possible_move_coords)
   # TODO - stub
-  possible_moves[rand(possible_moves.length)]
+  possible_move_coords[rand(possible_move_coords.length)]
 end
 
 post '/end' do
